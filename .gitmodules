@@ -1,0 +1,3 @@
+[submodule "flare_backend"]
+	path = flare_backend
+	url = https://github.com/Belendia/flare_backend.git
