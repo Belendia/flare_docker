@@ -18,7 +18,7 @@ services:
     container_name: flare_web
     build:
       context: .
-      dockerfile: ./ussd_be/Dockerfile
+      dockerfile: ./flare_backend/Dockerfile
     command: >
       sh -c "python /code/manage.py collectstatic --no-input
       && python /code/manage.py makemigrations 
@@ -30,9 +30,9 @@ services:
       && python /code/manage.py initconfig 
       && gunicorn flare.wsgi -b 0.0.0.0:8000"
     volumes:
-      - ./ussd_be:/code
-      - ./ussd_be/staticfiles/admin:/usr/share/nginx/html/static/admin
-      - ./ussd_be/staticfiles/rest_framework:/usr/share/nginx/html/static/rest_framework
+      - ./flare_backend:/code
+      - ./flare_backend/staticfiles/admin:/usr/share/nginx/html/static/admin
+      - ./flare_backend/staticfiles/rest_framework:/usr/share/nginx/html/static/rest_framework
     ports:
       - "8000:8000"
     restart: on-failure
@@ -42,12 +42,12 @@ services:
     container_name: flare_celery_worker
     build:
       context: .
-      dockerfile: ./ussd_be/Dockerfile
+      dockerfile: ./flare_backend/Dockerfile
     command: >
       sh -c "wait-for redis:6379 && wait-for web:8000
       && celery -A flare  worker -l info"
     volumes:
-      - ./ussd_be:/code
+      - ./flare_backend:/code
     depends_on:
       - redis
       - web
@@ -57,12 +57,12 @@ services:
     container_name: flare_celery_beat
     build:
       context: .
-      dockerfile: ./ussd_be/Dockerfile
+      dockerfile: ./flare_backend/Dockerfile
     command: >
       sh -c "wait-for redis:6379 && wait-for web:8000
       && celery -A flare beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
     volumes:
-      - ./ussd_be:/code
+      - ./flare_backend:/code
     depends_on:
       - redis
       - web
@@ -74,17 +74,17 @@ services:
     container_name: flare_nginx
     build:
       context: .
-      dockerfile: ./ussd_fe/Dockerfile
+      dockerfile: ./flare_frontend/Dockerfile
     ports:
       - "8999:8999"
-    environment:
-      - VIRTUAL_HOST=ussd.covid19.et
-      - VIRTUAL_PORT=8999
-      #- LETSENCRYPT_HOST=ussd.covid19.et
+    # environment:
+    #   - VIRTUAL_HOST=ussd.covid19.et
+    #   - VIRTUAL_PORT=8999
+    #- LETSENCRYPT_HOST=ussd.covid19.et
     network_mode: "bridge"
     volumes:
-      - ./ussd_be/staticfiles/admin:/usr/share/nginx/html/static/admin
-      - ./ussd_be/staticfiles/rest_framework:/usr/share/nginx/html/static/rest_framework
+      - ./flare_backend/staticfiles/admin:/usr/share/nginx/html/static/admin
+      - ./flare_backend/staticfiles/rest_framework:/usr/share/nginx/html/static/rest_framework
     depends_on:
       - web
 # volumes:
