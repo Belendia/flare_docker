@@ -81,7 +81,7 @@ services:
     #   - VIRTUAL_HOST=ussd.covid19.et
     #   - VIRTUAL_PORT=8999
     #- LETSENCRYPT_HOST=ussd.covid19.et
-    network_mode: "bridge"
+    #network_mode: "bridge"
     volumes:
       - ./flare_backend/staticfiles/admin:/usr/share/nginx/html/static/admin
       - ./flare_backend/staticfiles/rest_framework:/usr/share/nginx/html/static/rest_framework
