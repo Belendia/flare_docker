@@ -28,7 +28,7 @@ services:
       && python /code/manage.py initlang
       && python /code/manage.py initchannel
       && python /code/manage.py initconfig 
-      && gunicorn flare.wsgi -b 0.0.0.0:8000"
+      && gunicorn config.wsgi -b 0.0.0.0:8000"
     volumes:
       - ./flare_backend:/code
       - ./flare_backend/staticfiles/admin:/usr/share/nginx/html/static/admin
@@ -45,7 +45,7 @@ services:
       dockerfile: ./flare_backend/Dockerfile
     command: >
       sh -c "wait-for redis:6379 && wait-for web:8000
-      && celery -A flare  worker -l info"
+      && celery -A config  worker -l info"
     volumes:
       - ./flare_backend:/code
     depends_on:
@@ -60,7 +60,7 @@ services:
       dockerfile: ./flare_backend/Dockerfile
     command: >
       sh -c "wait-for redis:6379 && wait-for web:8000
-      && celery -A flare beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+      && celery -A config beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
     volumes:
       - ./flare_backend:/code
     depends_on:
