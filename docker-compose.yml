@@ -1,14 +1,17 @@
 version: "3"
 
 services:
-  # db:
-  #   image: postgres:9.6.5
-  #   environment:
-  #     - POSTGRES_DB=flare
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_PASSWORD=postgres123882
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data/
+  db:
+    image: postgres:13.2-alpine
+    environment:
+      - POSTGRES_DB=flare
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres123882
+    ports:
+      - "5435:5432"
+    restart: on-failure
+    volumes:
+      - /Users/belendia/.postgres13:/var/lib/postgresql/data/
   # Redis
   redis:
     image: redis:6.0.1-alpine
@@ -20,7 +23,8 @@ services:
       context: .
       dockerfile: ./flare_backend/Dockerfile
     command: >
-      sh -c "python /code/manage.py collectstatic --no-input
+      sh -c "wait-for redis:6379 && wait-for db:5432 
+      && python /code/manage.py collectstatic --no-input
       && python /code/manage.py makemigrations 
       && python /code/manage.py migrate  --noinput 
       && python /code/manage.py initadmin 
@@ -35,6 +39,9 @@ services:
       - ./flare_backend/staticfiles/rest_framework:/usr/share/nginx/html/static/rest_framework
     ports:
       - "8000:8000"
+    depends_on:
+      - db
+      - redis
     restart: on-failure
 
   # Celery worker
@@ -87,5 +94,3 @@ services:
       - ./flare_backend/staticfiles/rest_framework:/usr/share/nginx/html/static/rest_framework
     depends_on:
       - web
-# volumes:
-#   postgres_data:
